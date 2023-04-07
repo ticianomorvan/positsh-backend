@@ -25,7 +25,9 @@ async fn main() -> std::io::Result<()> {
     let server = HttpServer::new(move || {
         App::new().app_data(web::Data::new(pool.clone())).service(
             web::scope("/posits")
-                .service(web::resource("").route(web::post().to(handlers::create_posit))),
+                .service(handlers::create_posit)
+                .service(handlers::get_posits)
+                .service(handlers::delete_posit),
         )
     })
     .bind(config.server_address.clone())?

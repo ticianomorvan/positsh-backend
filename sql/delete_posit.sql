@@ -1,0 +1,1 @@
+DELETE FROM psh.posits WHERE id = $1;
