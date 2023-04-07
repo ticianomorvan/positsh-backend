@@ -1,0 +1,11 @@
+DROP SCHEMA IF EXISTS psh CASCADE;
+CREATE SCHEMA psh;
+
+CREATE TABLE psh.posits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+  title VARCHAR(128) NOT NULL UNIQUE,
+  content TEXT NOT NULL,
+  topic VARCHAR(72) NOT NULL,
+  author_name VARCHAR(72) NOT NULL,
+  UNIQUE (title)
+);
