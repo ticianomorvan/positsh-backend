@@ -2,7 +2,10 @@ use deadpool_postgres::Client;
 use tokio_pg_mapper::FromTokioPostgresRow;
 use uuid::Uuid;
 
-use crate::{errors::CustomError, models::Posit};
+use crate::{
+    errors::CustomError,
+    models::{PartialPosit, Posit},
+};
 
 pub async fn get_posits(client: &Client) -> Result<Vec<Posit>, CustomError> {
     let _statement = include_str!("../sql/get_posits.sql");
@@ -50,6 +53,28 @@ pub async fn get_posit(client: &Client, id: String) -> Result<Posit, CustomError
     let posit = Posit::from_row_ref(&row).unwrap();
 
     Ok(posit)
+}
+
+pub async fn update_posit(
+    client: &Client,
+    id: String,
+    update_body: PartialPosit,
+) -> Result<Posit, CustomError> {
+    let parsed_id: Uuid = Uuid::parse_str(&id).unwrap();
+    let _statement = include_str!("../sql/update_posit.sql");
+    let _statement = _statement.replace("$table_fields", &Posit::sql_table_fields());
+    let statement = client.prepare(&_statement).await.unwrap();
+
+    let row = client
+        .query_one(
+            &statement,
+            &[&parsed_id, &update_body.title, &update_body.content],
+        )
+        .await?;
+
+    let updated_posit = Posit::from_row_ref(&row).unwrap();
+
+    Ok(updated_posit)
 }
 
 pub async fn delete_posit(client: &Client, id: String) -> Result<u64, CustomError> {

@@ -9,3 +9,9 @@ pub struct Posit {
     pub topic: String,
     pub author_name: String,
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct PartialPosit {
+    pub title: String,
+    pub content: String,
+}

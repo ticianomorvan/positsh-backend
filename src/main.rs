@@ -28,6 +28,7 @@ async fn main() -> std::io::Result<()> {
                 .service(handlers::get_posits)
                 .service(handlers::create_posit)
                 .service(handlers::get_posit)
+                .service(handlers::update_posit)
                 .service(handlers::delete_posit),
         )
     })
