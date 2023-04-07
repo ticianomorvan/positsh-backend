@@ -1,0 +1,1 @@
+SELECT * FROM psh.posits WHERE id = $1;
