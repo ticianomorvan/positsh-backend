@@ -6,7 +6,7 @@ mod models;
 
 use ::config::Config;
 use actix_cors::Cors;
-use actix_web::{http::header, web, App, HttpServer};
+use actix_web::{http::header, middleware, web, App, HttpServer};
 use dotenv::dotenv;
 use tokio_postgres::NoTls;
 
@@ -36,15 +36,10 @@ async fn main() -> std::io::Result<()> {
                     ])
                     .max_age(3600),
             )
+            .wrap(middleware::Logger::default())
             .app_data(web::Data::new(pool.clone()))
-            .service(
-                web::scope("/posits")
-                    .service(handlers::get_posits)
-                    .service(handlers::create_posit)
-                    .service(handlers::get_posit)
-                    .service(handlers::update_posit)
-                    .service(handlers::delete_posit),
-            )
+            .service(web::scope("/posits").configure(handlers::posit::init_routes))
+            .service(web::scope("/users").configure(handlers::user::init_routes))
     })
     .bind(config.server_address.clone())?
     .run();

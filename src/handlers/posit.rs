@@ -4,13 +4,13 @@ use deadpool_postgres::{Client, Pool};
 use crate::{
     database,
     errors::CustomError,
-    models::{PartialPosit, Posit},
+    models::posit::{PartialPosit, Posit},
 };
 
 #[get("")]
 pub async fn get_posits(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
     let client: Client = pool.get().await.map_err(CustomError::PoolError)?;
-    let posits = database::get_posits(&client).await?;
+    let posits = database::posit::get_posits(&client).await?;
 
     Ok(HttpResponse::Ok().json(posits))
 }
@@ -22,7 +22,7 @@ pub async fn create_posit(
 ) -> Result<HttpResponse, Error> {
     let posit_body: Posit = posit.into_inner();
     let client: Client = pool.get().await.map_err(CustomError::PoolError)?;
-    let new_posit = database::create_posit(&client, posit_body).await?;
+    let new_posit = database::posit::create_posit(&client, posit_body).await?;
 
     Ok(HttpResponse::Ok().json(new_posit))
 }
@@ -33,7 +33,7 @@ pub async fn get_posit(
     pool: web::Data<Pool>,
 ) -> Result<HttpResponse, Error> {
     let client: Client = pool.get().await.map_err(CustomError::PoolError)?;
-    let posit = database::get_posit(&client, id.to_string()).await?;
+    let posit = database::posit::get_posit(&client, id.to_string()).await?;
 
     Ok(HttpResponse::Ok().json(posit))
 }
@@ -46,7 +46,8 @@ pub async fn update_posit(
 ) -> Result<HttpResponse, Error> {
     let new_posit_body: PartialPosit = update_body.into_inner();
     let client = pool.get().await.map_err(CustomError::PoolError)?;
-    let updated_posit = database::update_posit(&client, id.to_string(), new_posit_body).await?;
+    let updated_posit =
+        database::posit::update_posit(&client, id.to_string(), new_posit_body).await?;
 
     Ok(HttpResponse::Ok().json(updated_posit))
 }
@@ -57,7 +58,19 @@ pub async fn delete_posit(
     pool: web::Data<Pool>,
 ) -> Result<HttpResponse, Error> {
     let client: Client = pool.get().await.map_err(CustomError::PoolError)?;
-    let result = database::delete_posit(&client, id.to_string()).await?;
+    let result = database::posit::delete_posit(&client, id.to_string()).await?;
+
+    if result == 0 {
+        return Ok(HttpResponse::NotFound().finish());
+    }
 
     Ok(HttpResponse::Ok().json(result))
+}
+
+pub fn init_routes(config: &mut web::ServiceConfig) {
+    config.service(get_posits);
+    config.service(get_posit);
+    config.service(create_posit);
+    config.service(update_posit);
+    config.service(delete_posit);
 }

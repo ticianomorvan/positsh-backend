@@ -1,0 +1,1 @@
+SELECT * FROM psh.users WHERE email = $1;

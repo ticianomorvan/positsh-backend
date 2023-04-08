@@ -4,11 +4,11 @@ use uuid::Uuid;
 
 use crate::{
     errors::CustomError,
-    models::{PartialPosit, Posit},
+    models::posit::{PartialPosit, Posit},
 };
 
 pub async fn get_posits(client: &Client) -> Result<Vec<Posit>, CustomError> {
-    let _statement = include_str!("../sql/get_posits.sql");
+    let _statement = include_str!("../../sql/posit/get_posits.sql");
     let statement = client.prepare(&_statement).await.unwrap();
 
     let posits = client
@@ -22,7 +22,7 @@ pub async fn get_posits(client: &Client) -> Result<Vec<Posit>, CustomError> {
 }
 
 pub async fn create_posit(client: &Client, posit_body: Posit) -> Result<Posit, CustomError> {
-    let _statement = include_str!("../sql/create_posit.sql");
+    let _statement = include_str!("../../sql/posit/create_posit.sql");
     let _statement = _statement.replace("$table_fields", &Posit::sql_table_fields());
     let statement = client.prepare(&_statement).await.unwrap();
 
@@ -46,7 +46,7 @@ pub async fn create_posit(client: &Client, posit_body: Posit) -> Result<Posit, C
 
 pub async fn get_posit(client: &Client, id: String) -> Result<Posit, CustomError> {
     let parsed_id: Uuid = Uuid::parse_str(&id).unwrap();
-    let _statement = include_str!("../sql/get_posit.sql");
+    let _statement = include_str!("../../sql/posit/get_posit.sql");
     let statement = client.prepare(&_statement).await.unwrap();
 
     let row = client.query_one(&statement, &[&parsed_id]).await?;
@@ -61,7 +61,7 @@ pub async fn update_posit(
     update_body: PartialPosit,
 ) -> Result<Posit, CustomError> {
     let parsed_id: Uuid = Uuid::parse_str(&id).unwrap();
-    let _statement = include_str!("../sql/update_posit.sql");
+    let _statement = include_str!("../../sql/posit/update_posit.sql");
     let _statement = _statement.replace("$table_fields", &Posit::sql_table_fields());
     let statement = client.prepare(&_statement).await.unwrap();
 
@@ -79,7 +79,7 @@ pub async fn update_posit(
 
 pub async fn delete_posit(client: &Client, id: String) -> Result<u64, CustomError> {
     let parsed_id: Uuid = Uuid::parse_str(&id).unwrap();
-    let _statement = include_str!("../sql/delete_posit.sql");
+    let _statement = include_str!("../../sql/posit/delete_posit.sql");
     let statement = client.prepare(&_statement).await.unwrap();
 
     let result = client.execute(&statement, &[&parsed_id]).await?;
