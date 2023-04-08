@@ -48,6 +48,8 @@ async fn main() -> std::io::Result<()> {
         }
     };
 
+    println!("Server successfuly started.");
+
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {

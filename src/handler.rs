@@ -1,10 +1,12 @@
+use actix_web::{delete, get, patch, post, web, HttpResponse, Responder};
+use chrono::Utc;
+use serde_json::json;
+
 use crate::{
     model::PositModel,
-    schema::{CreatePositSchema, FilterOptions},
+    schema::{CreatePositSchema, FilterOptions, UpdatePositSchema},
     AppState,
 };
-use actix_web::{get, post, web, HttpResponse, Responder};
-use serde_json::json;
 
 #[get("/posits")]
 pub async fn list_posits(
@@ -100,11 +102,85 @@ async fn fetch_posit(path: web::Path<uuid::Uuid>, data: web::Data<AppState>) -> 
     }
 }
 
+#[patch("/posits/{id}")]
+pub async fn update_posit(
+    path: web::Path<uuid::Uuid>,
+    body: web::Json<UpdatePositSchema>,
+    data: web::Data<AppState>,
+) -> impl Responder {
+    let id: uuid::Uuid = path.into_inner();
+    let result = sqlx::query_as!(PositModel, "SELECT * FROM posits WHERE id = $1", id)
+        .fetch_one(&data.database)
+        .await;
+
+    if result.is_err() {
+        return HttpResponse::NotFound().json(json!({
+          "status": "error",
+          "message": "Posit not found."
+        }));
+    }
+
+    let posit = result.unwrap();
+
+    let new_result = sqlx::query_as!(
+      PositModel,
+      "UPDATE posits SET title = $1, content = $2, topic = $3, updated_at = $4 WHERE id = $5 RETURNING *",
+      body.title.to_owned().unwrap_or(posit.title),
+      body.content.to_owned().unwrap_or(posit.content),
+      body.topic.to_owned().unwrap_or(posit.topic.unwrap()),
+      Utc::now(),
+      id
+    )
+    .fetch_one(&data.database)
+    .await;
+
+    match new_result {
+        Ok(posit) => {
+            return HttpResponse::Ok().json(json!({
+              "status": "success",
+              "data": json!({
+                "posit": posit
+              })
+            }))
+        }
+        Err(error) => {
+            return HttpResponse::InternalServerError().json(json!({
+              "status": "error",
+              "message": format!("{:?}", error)
+            }))
+        }
+    }
+}
+
+#[delete("/posits/{id}")]
+pub async fn delete_posit(
+    path: web::Path<uuid::Uuid>,
+    data: web::Data<AppState>,
+) -> impl Responder {
+    let id: uuid::Uuid = path.into_inner();
+    let rows_affected = sqlx::query!("DELETE FROM posits WHERE id = $1", id)
+        .execute(&data.database)
+        .await
+        .unwrap()
+        .rows_affected();
+
+    if rows_affected == 0 {
+        return HttpResponse::NotFound().json(json!({
+          "status": "error",
+          "message": "Posit not found"
+        }));
+    }
+
+    HttpResponse::NoContent().finish()
+}
+
 pub fn init_handler(config: &mut web::ServiceConfig) {
     config.service(
         web::scope("/api")
             .service(list_posits)
             .service(create_posit)
-            .service(fetch_posit),
+            .service(fetch_posit)
+            .service(update_posit)
+            .service(delete_posit),
     );
 }
