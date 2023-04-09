@@ -11,7 +11,7 @@ use crate::utilities::schemas::JWTClaims;
 
 pub fn create_jwt(user_id: Uuid, email: String) -> String {
     let expiration = Utc::now()
-        .checked_add_signed(Duration::hours(24))
+        .checked_add_signed(Duration::days(7))
         .expect("Valid timestamp")
         .timestamp();
 

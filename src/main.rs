@@ -5,21 +5,13 @@ mod utilities;
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::web;
-use actix_web::{get, http::header, App, HttpResponse, HttpServer, Responder};
+use actix_web::{http::header, App, HttpServer};
 use dotenv::dotenv;
-use serde_json::json;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 
 pub struct AppState {
     database: Pool<Postgres>,
-}
-
-#[get("/api/health")]
-async fn health() -> impl Responder {
-    const MESSAGE: &str = "SERVER IS RUNNING";
-
-    HttpResponse::Ok().json(json!({"status": "active", "message": MESSAGE}))
 }
 
 #[actix_web::main]

@@ -1,5 +1,6 @@
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
+use uuid::Uuid;
 
 use crate::{
     users::auth::create_jwt,
@@ -9,8 +10,8 @@ use crate::{
 };
 
 #[get("/{id}")]
-pub async fn fetch_user(path: web::Path<uuid::Uuid>, data: web::Data<AppState>) -> impl Responder {
-    let id: uuid::Uuid = path.into_inner();
+pub async fn fetch_user(path: web::Path<Uuid>, data: web::Data<AppState>) -> impl Responder {
+    let id: Uuid = path.into_inner();
     let result = sqlx::query_as!(
         ReducedUserModel,
         "SELECT id, username, fullname, email FROM users WHERE id = $1",
@@ -22,16 +23,12 @@ pub async fn fetch_user(path: web::Path<uuid::Uuid>, data: web::Data<AppState>) 
     match result {
         Ok(user) => {
             return HttpResponse::Ok().json(json!({
-                "status": "success",
-                "data": json!({
-                    "user": user
-                })
+                "status": "success", "data": json!({ "user": user })
             }))
         }
         Err(_) => {
             return HttpResponse::NotFound().json(json!({
-                "status": "error",
-                "message": "No user found with that ID."
+                "status": "error", "message": "No user found with that ID."
             }))
         }
     }
@@ -59,23 +56,18 @@ pub async fn create_user(
     match result {
         Ok(user) => {
             return HttpResponse::Ok().json(json!({
-              "status": "success",
-              "data": json!({
-                "user": user
-              })
+              "status": "success", "data": json!({ "user": user })
             }))
         }
         Err(error) => {
             if error.to_string().contains("duplicate key value") {
                 return HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": "Username or email already exists."
+                    "status": "error", "message": "Username or email already exists."
                 }));
             }
 
             return HttpResponse::InternalServerError().json(json!({
-              "status": "error",
-              "message": "There was an unexpected error."
+              "status": "error", "message": "There was an unexpected error."
             }));
         }
     }
@@ -96,25 +88,22 @@ pub async fn login(
 
     match result {
         Ok(user) => {
-            if bcrypt::verify(body.password.clone(), user.password.as_str()).unwrap() {
-                let token = create_jwt(user.id, user.username);
+            let passwords_match = bcrypt::verify(body.password.clone(), &user.password).unwrap();
+
+            if passwords_match {
+                let token = create_jwt(user.id.clone(), user.username.clone());
                 return HttpResponse::Ok().json(json!({
-                  "status": "success",
-                  "data": json!({
-                    "token": token
-                  })
+                  "status": "success", "data": json!({ "user": user, "token": token })
                 }));
             } else {
                 return HttpResponse::BadRequest().json(json!({
-                  "status": "error",
-                  "message": "Credentials provided doesn't match."
+                  "status": "error", "message": "Credentials provided doesn't match."
                 }));
             }
         }
-        Err(error) => {
+        Err(_) => {
             return HttpResponse::InternalServerError().json(json!({
-              "status": "error",
-              "message": format!("{:?}", error)
+              "status": "error", "message": "Failed to fetch user."
             }))
         }
     }

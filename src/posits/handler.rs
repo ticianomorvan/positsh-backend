@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     posits::model::PositModel,
     posits::schema::{CreatePositSchema, UpdatePositSchema},
-    users,
+    users::auth::validator,
     utilities::schemas::{FilterOptions, JWTClaims},
     AppState,
 };
@@ -188,7 +188,7 @@ pub async fn delete_posit(
 }
 
 pub fn init_handler(config: &mut web::ServiceConfig) {
-    let jwt_middleware = HttpAuthentication::bearer(users::auth::validator);
+    let jwt_middleware = HttpAuthentication::bearer(validator);
 
     config.service(
         web::scope("/api/posits")
