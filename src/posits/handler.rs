@@ -1,10 +1,12 @@
+/*
 use actix_web::{delete, get, patch, post, web, HttpResponse, Responder};
 use chrono::Utc;
 use serde_json::json;
 
 use crate::{
-    model::PositModel,
-    schema::{CreatePositSchema, FilterOptions, UpdatePositSchema},
+    posits::model::PositModel,
+    posits::schema::{CreatePositSchema, UpdatePositSchema},
+    utilities::schemas::FilterOptions,
     AppState,
 };
 
@@ -18,7 +20,7 @@ pub async fn list_posits(
 
     let result = sqlx::query_as!(
         PositModel,
-        "SELECT * FROM posits ORDER by id LIMIT $1 OFFSET $2",
+        "SELECT * FROM posits ORDER BY id LIMIT $1 OFFSET $2",
         limit as i32,
         offset as i32
     )
@@ -184,3 +186,4 @@ pub fn init_handler(config: &mut web::ServiceConfig) {
             .service(delete_posit),
     );
 }
+*/

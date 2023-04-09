@@ -1,6 +1,6 @@
-mod handler;
-mod model;
-mod schema;
+mod posits;
+mod users;
+mod utilities;
 
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
@@ -55,7 +55,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(AppState {
                 database: pool.clone(),
             }))
-            .configure(handler::init_handler)
+            //.configure(posits::handler::init_handler)
+            .configure(users::handler::init_handler)
             .wrap(
                 Cors::default()
                     .allowed_origin("http://localhost:3000")
