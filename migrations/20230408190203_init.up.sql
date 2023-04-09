@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS posits (
   title VARCHAR(255) NOT NULL UNIQUE,
   content TEXT NOT NULL,
   topic VARCHAR(72),
-  user_id UUID REFERENCES users(id)
+  user_id UUID REFERENCES users(id) NOT NULL
 );

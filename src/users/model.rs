@@ -19,3 +19,11 @@ pub struct UserModel {
     pub password: String,
     pub email: String,
 }
+
+#[derive(Debug, FromRow, Deserialize, Serialize)]
+pub struct ReducedUserModel {
+    pub id: Uuid,
+    pub username: String,
+    pub fullname: String,
+    pub email: String,
+}

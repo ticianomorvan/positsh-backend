@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
 pub struct FilterOptions {
@@ -11,9 +12,9 @@ pub struct ParamOptions {
     pub id: String,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct JWTClaims {
-    pub sub: String,
+    pub sub: Uuid,
     pub user: String,
     pub exp: usize,
 }

@@ -19,5 +19,5 @@ pub struct PositModel {
     pub topic: Option<String>,
 
     #[serde(rename = "userId")]
-    pub user_id: String,
+    pub user_id: Uuid,
 }
