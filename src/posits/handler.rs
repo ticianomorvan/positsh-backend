@@ -1,4 +1,4 @@
-use actix_web::{delete, get, patch, post, web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use chrono::Utc;
 use serde_json::json;
@@ -12,7 +12,6 @@ use crate::{
     AppState,
 };
 
-#[get("")]
 pub async fn list_posits(
     options: web::Query<FilterOptions>,
     data: web::Data<AppState>,
@@ -39,7 +38,6 @@ pub async fn list_posits(
     }
 }
 
-#[post("")]
 pub async fn create_posit(
     body: web::Json<CreatePositSchema>,
     data: web::Data<AppState>,
@@ -82,7 +80,6 @@ pub async fn create_posit(
     }
 }
 
-#[get("/{id}")]
 async fn fetch_posit(path: web::Path<Uuid>, data: web::Data<AppState>) -> impl Responder {
     let id: Uuid = path.into_inner();
 
@@ -100,7 +97,6 @@ async fn fetch_posit(path: web::Path<Uuid>, data: web::Data<AppState>) -> impl R
     }
 }
 
-#[patch("/{id}")]
 pub async fn update_posit(
     path: web::Path<Uuid>,
     body: web::Json<UpdatePositSchema>,
@@ -148,7 +144,6 @@ pub async fn update_posit(
     }
 }
 
-#[delete("/{id}")]
 pub async fn delete_posit(
     path: web::Path<Uuid>,
     data: web::Data<AppState>,
@@ -192,11 +187,16 @@ pub fn init_handler(config: &mut web::ServiceConfig) {
 
     config.service(
         web::scope("/api/posits")
-            .wrap(jwt_middleware)
-            .service(list_posits)
-            .service(create_posit)
-            .service(fetch_posit)
-            .service(update_posit)
-            .service(delete_posit),
+            .service(
+                web::resource("")
+                    .route(web::get().to(list_posits))
+                    .route(web::post().to(create_posit).wrap(jwt_middleware.clone())),
+            )
+            .service(
+                web::resource("/{id}")
+                    .route(web::get().to(fetch_posit))
+                    .route(web::patch().to(update_posit).wrap(jwt_middleware.clone()))
+                    .route(web::delete().to(delete_posit).wrap(jwt_middleware.clone())),
+            ),
     );
 }
