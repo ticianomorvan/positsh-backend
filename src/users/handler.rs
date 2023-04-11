@@ -103,7 +103,7 @@ pub async fn login(
         }
         Err(_) => {
             return HttpResponse::InternalServerError().json(json!({
-              "status": "error", "message": "Failed to fetch user."
+              "status": "error", "message": "User with that email doesn't exists."
             }))
         }
     }
